@@ -74,23 +74,22 @@ const FoodDetails: React.FC = () => {
   useEffect(() => {
     async function loadFood(): Promise<void> {
       // Load a specific food with extras based on routeParams id
-      const url = `/foods/${routeParams.id}/`;
+      const url = `foods/${routeParams.id}`;
+
       const { data } = await api.get<Food>(url);
-
-      const foodExtras = data.extras.map(
-        extra => ({ ...extra, quantity: 0 } as Extra),
-      );
-
-      setExtras(foodExtras);
 
       const formattedFood = {
         ...data,
         formattedPrice: formatValue(data.price),
       } as Food;
 
-      console.log(formattedFood);
-
       setFood(formattedFood);
+
+      const foodExtras = data.extras.map(
+        extra => ({ ...extra, quantity: 0 } as Extra),
+      );
+
+      setExtras(foodExtras);
     }
 
     loadFood();
@@ -99,7 +98,7 @@ const FoodDetails: React.FC = () => {
   function handleIncrementExtra(id: number): void {
     // Increment extra quantity
     const updatedAmount = extras.map(extra =>
-      id === extra.id ? { ...extra, quantity: +1 } : extra,
+      id === extra.id ? { ...extra, quantity: extra.quantity + 1 } : extra,
     );
 
     setExtras(updatedAmount);
@@ -138,7 +137,7 @@ const FoodDetails: React.FC = () => {
       return amount + amountExtraPrice;
     }, 0);
 
-    const amountOrderValue = foodQuantity * food.price + amountPriceExtras;
+    const amountOrderValue = foodQuantity * (food.price + amountPriceExtras);
 
     return formatValue(amountOrderValue);
   }, [extras, food, foodQuantity]);
