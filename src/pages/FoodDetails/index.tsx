@@ -127,7 +127,24 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(() => {
+    async function removeFavoriteFood(id: number): Promise<void> {
+      const url = `favorites/${id}`;
+      await api.delete(url);
+      setIsFavorite(false);
+    }
+
+    async function addFavoriteFood(): Promise<void> {
+      const resource = 'favorites';
+      const requestBody = { data: food };
+      await api.post(resource, requestBody);
+      setIsFavorite(true);
+    }
     // Toggle if food is favorite or not
+    if (isFavorite) {
+      removeFavoriteFood(food.id);
+    }
+
+    addFavoriteFood();
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
@@ -142,9 +159,18 @@ const FoodDetails: React.FC = () => {
     return formatValue(amountOrderValue);
   }, [extras, food, foodQuantity]);
 
-  async function handleFinishOrder(): Promise<void> {
+  const handleFinishOrder = useCallback(async () => {
     // Finish the order and save on the API
-  }
+    const resource = 'orders';
+    const orderData = { ...food, extras } as Omit<Food, 'formattedPrice'>;
+    const requestBody = { data: orderData };
+    await api.post(resource, requestBody);
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Dashboard' }],
+    });
+  }, [extras, food, navigation]);
 
   // Calculate the correct icon name
   const favoriteIconName = useMemo(
